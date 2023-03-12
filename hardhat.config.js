@@ -6,10 +6,9 @@ require("solidity-coverage")
 
 require("dotenv").config()
 
-const GOERLI_URL_RPC = process.env.URL_RPC_GOERLI
-const LOCALHOST_URL_RPC = process.env.URL_RPC_LOCALHOST
-const PRIVATE_KEY_ACCOUNT_GOERLI = process.env.PRIVATE_KEY_GOERLI
-const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API
+const MUMBAI_URL_RPC = process.env.URL_RPC_MUMBAI
+const PRIVATE_KEY_ACCOUNT_MUMBAI = process.env.PRIVATE_KEY_MUMBAI
+const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API
 const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY
 
 /** @type import('hardhat/config').HardhatUserConfig */
@@ -17,10 +16,7 @@ module.exports = {
     solidity: {
         compilers: [
             {
-                version: "0.8.9",
-            },
-            {
-                version: "0.6.6",
+                version: "0.8.14",
             },
         ],
     },
@@ -33,20 +29,20 @@ module.exports = {
         },
     },
     networks: {
-        goerli: {
-            chainId: 5,
+        mumbai: {
+            chainId: 80001,
             blockConfirmations: 6,
-            url: GOERLI_URL_RPC,
-            accounts: [PRIVATE_KEY_ACCOUNT_GOERLI],
+            url: MUMBAI_URL_RPC,
+            accounts: [PRIVATE_KEY_ACCOUNT_MUMBAI],
         },
         hardhat: {
             chainId: 31337,
             blockConfirmations: 1,
         },
     },
-    etherscan: {
+    polygonscan: {
         apiKey: {
-            goerli: ETHERSCAN_API_KEY,
+            mumbai: POLYGONSCAN_API_KEY,
         },
     },
     gasReporter: {
@@ -55,7 +51,7 @@ module.exports = {
         noColors: true,
         currency: "USD",
         coinmarketcap: COINMARKETCAP_API_KEY,
-        token: "ETH",
+        token: "MATIC",
     },
     mocha: {
         timeout: 700000,

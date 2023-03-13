@@ -7,6 +7,7 @@
   "license": "MIT",
   "dependencies": {
     "@superfluid-finance/ethereum-contracts": "^1.5.1",
+    "dotenv": "^16.0.3",
     "hardhat": "^2.13.0"
   },
   "devDependencies": {

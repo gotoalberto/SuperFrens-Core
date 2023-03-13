@@ -6,6 +6,7 @@ dotenv.config();
 
 const MUMBAI_RPC_URL: string = process.env.MUMBAI_RPC_URL as string;
 const PRIVATE_KEY: string = process.env.PRIVATE_KEY as string;
+const POLYGONSCAN_API: string = process.env.POLYGONSCAN_API as string;
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
@@ -14,6 +15,11 @@ const config: HardhatUserConfig = {
       url: MUMBAI_RPC_URL,
       accounts: [PRIVATE_KEY],
       chainId: 80001,
+    },
+  },
+  etherscan: {
+    apiKey: {
+      polygonMumbai: POLYGONSCAN_API,
     },
   },
   solidity: "0.8.14",

@@ -9,14 +9,23 @@ import { ISuperfluid, ISuperToken } from "@superfluid-finance/ethereum-contracts
 contract FlowSenderFactory {
     mapping (address => FlowSender) public accountList;
 
-    event ContractCreated(address newAddress);
+    event ContractCreated(address flowSenderAddress);
 
-    ISuperToken fUSDCx = ISuperToken(0x42bb40bF79730451B11f6De1CbA222F17b87Afd7);
-    ISuperfluid hostPolygon = ISuperfluid(0xEB796bdb90fFA0f28255275e16936D25d3418603);
+    ISuperToken public fUSDCx = ISuperToken(0x42bb40bF79730451B11f6De1CbA222F17b87Afd7);
+    ISuperfluid public hostPolygon = ISuperfluid(0xEB796bdb90fFA0f28255275e16936D25d3418603);
 
-    function deployFlowSender(address _client, int96 amountFlowRate) public payable{
-        FlowSender newFlowSender = new FlowSender(hostPolygon, fUSDCx, amountFlowRate);
+    address public owner;
+    
+     constructor(){   
+        owner = msg.sender;
+    }
+
+    function deployFlowSender(address _client, int96 _amountFlowRate) external returns(address flowSenderAddress){
+        FlowSender newFlowSender = new FlowSender(hostPolygon, fUSDCx, _amountFlowRate);
+
         accountList[_client] = newFlowSender;
-        emit ContractCreated(address(newFlowSender));
+        flowSenderAddress = address(newFlowSender);
+
+        emit ContractCreated(flowSenderAddress);
     }
 }

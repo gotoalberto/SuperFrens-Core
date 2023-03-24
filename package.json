@@ -8,7 +8,8 @@
   "dependencies": {
     "@superfluid-finance/ethereum-contracts": "^1.5.1",
     "dotenv": "^16.0.3",
-    "hardhat": "^2.13.0"
+    "hardhat": "^2.13.0",
+    "hardhat-deploy": "^0.11.25"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",

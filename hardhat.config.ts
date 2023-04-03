@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const MUMBAI_RPC_URL: string = process.env.MUMBAI_RPC_URL as string;
+const ALCHEMY_KEY_MUMBAI: string = process.env.ALCHEMY_KEY_MUMBAI as string;
 const PRIVATE_KEY: string = process.env.PRIVATE_KEY as string;
 const POLYGONSCAN_API: string = process.env.POLYGONSCAN_API as string;
 
@@ -12,7 +12,7 @@ const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
   networks: {
     mumbai: {
-      url: MUMBAI_RPC_URL,
+      url: `https://polygon-mumbai.g.alchemy.com/v2/${ALCHEMY_KEY_MUMBAI}`,
       accounts: [PRIVATE_KEY],
       chainId: 80001,
     },

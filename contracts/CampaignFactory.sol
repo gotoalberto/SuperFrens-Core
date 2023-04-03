@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: Unlicensed
 pragma solidity 0.8.14;
 
-import {Campaign} from "./Campaigns.sol";
+import {Campaign} from "./Campaign.sol";
 
 import {ISuperToken} from "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol";
 

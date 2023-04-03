@@ -11,16 +11,13 @@ require("dotenv").config();
 
 async function main() {
   const providerLens = new ethers.providers.WebSocketProvider(
-    `wss://polygon-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_KEY_POLYGON}`
+    `wss://polygon-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_KEY_POLYGON}`
   );
   const providerSuperfluid = ethers.getDefaultProvider(
-    `https://polygon-mumbai.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_KEY_MUMBAI}`
+    `https://polygon-mumbai.g.alchemy.com/v2/${process.env.ALCHEMY_KEY_MUMBAI}`
   );
 
-  const signer = new ethers.Wallet(
-    process.env.NEXT_PUBLIC_PRIVATE_KEY,
-    providerSuperfluid
-  );
+  const signer = new ethers.Wallet(process.env.PRIVATE_KEY, providerSuperfluid);
 
   const sf = await Framework.create({
     chainId: Number(80001),

@@ -10,21 +10,20 @@ contract Campaign {
 
     ISuperToken internal immutable tokenX;
     ERC20 internal immutable baseToken;
-    uint256 internal fee;
-    uint256 internal amount;
 
     constructor(ISuperToken _tokenX, address _operator) {
         tokenX = _tokenX;
         tokenX.setMaxFlowPermissions(_operator);
         baseToken = ERC20(tokenX.getUnderlyingToken());
-        amount = baseToken.balanceOf(address(this));
-        fee = (amount * 300) / 10000;
-        baseToken.transfer(_operator, fee);
-        baseToken.approve(address(tokenX), (amount - fee));
-        _upgrade();
+        baseToken.approve(address(tokenX), 2 ** 256 - 1);
+        _upgrade(_operator);
     }
 
-    function _upgrade() internal {
+    function _upgrade(address _operator) internal {
         tokenX.upgrade(baseToken.balanceOf(address(this)));
+        tokenX.transfer(
+            _operator,
+            (baseToken.balanceOf(address(this)) * 300) / 10000
+        );
     }
 }

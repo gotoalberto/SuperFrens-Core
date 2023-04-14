@@ -1443,25 +1443,6 @@ const contractLensABI = [
   },
 ];
 
-const campaingAbi = [
-  {
-    inputs: [
-      {
-        internalType: "contract ISuperToken",
-        name: "_tokenX",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "_operator",
-        type: "address",
-      },
-    ],
-    stateMutability: "nonpayable",
-    type: "constructor",
-  },
-];
-
 const ERC721 = [
   {
     inputs: [],
@@ -1821,4 +1802,4 @@ const ERC721 = [
 
 const contractLensAddress = "0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d";
 
-module.exports = { contractLensABI, campaingAbi, ERC721, contractLensAddress };
+module.exports = { contractLensABI, ERC721, contractLensAddress };

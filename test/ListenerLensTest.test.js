@@ -65,7 +65,8 @@ describe("Contract listener", function () {
           receiver: newFollower,
           flowRate: calculatedFlowRate,
         });
-        await createFlowOperation.exec(signer);
+        const response = await createFlowOperation.exec(signer);
+        console.log(response);
       } catch (error) {
         console.log(
           "Hmmm, your transaction threw an error. Make sure that this stream does not already exist, and that you've entered a valid Ethereum address!"
@@ -80,7 +81,8 @@ describe("Contract listener", function () {
           receiver: newFollower,
           superToken: fUSDCx.address,
         });
-        await deleteFlowOperation.exec(signer);
+        const response = await deleteFlowOperation.exec(signer);
+        console.log(response);
       } catch (error) {
         console.log(
           "Hmmm, your transaction threw an error. Make sure that this stream does not already exist, and that you've entered a valid Ethereum address!"

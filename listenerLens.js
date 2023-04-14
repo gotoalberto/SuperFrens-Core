@@ -1,10 +1,10 @@
 const {
   contractLensABI,
-  campaingAbi,
   ERC721,
   contractLensAddress,
 } = require("./const/const");
 const ethers = require("ethers");
+const fetch = require("cross-fetch");
 const { Framework } = require("@superfluid-finance/sdk-core");
 
 require("dotenv").config();
@@ -24,21 +24,65 @@ async function main() {
     provider: providerSuperfluid,
   });
 
+  let clientsArray = [];
+
   const fUSDCx = await sf.loadSuperToken("fUSDCx");
-  const monthlyAmount = ethers.utils.parseEther("1");
-  const calculatedFlowRate = Math.round(monthlyAmount / 2592000);
 
-  const clientsArray = [
-    {
-      clientProfileId: 0x01a8f0,
-      clientAddress: "0x43ddf2bf7b0d2bb2d3904298763bca2d3f2b40e0",
-      flowSenderAddress: "0xD6E47877b0eeC8D3cF0B00EE49C28d6aa349b01d",
-      followNftAddress: "0xAAAC76a2729bf0eE736577DABD2A751C8790E681",
-      followers: [],
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
     },
-  ];
+  };
 
-  let contractCampaign;
+  async function getClients() {
+    const response = await fetch(
+      "https://qfgg4yahcg.execute-api.eu-north-1.amazonaws.com/fluidSense/clients",
+      options
+    );
+    clientsArray = await response.json();
+  }
+
+  async function getFollowers(flowSenderAddress) {
+    const response = await fetch(
+      `https://qfgg4yahcg.execute-api.eu-north-1.amazonaws.com/fluidSense/followers?flowSenderAddress=${flowSenderAddress}`,
+      options
+    );
+    return response.json();
+  }
+
+  async function deleteFollower(flowSenderAddress, followerAddress) {
+    const response = await fetch(
+      `https://qfgg4yahcg.execute-api.eu-north-1.amazonaws.com/fluidSense/followers?flowSenderAddress=${flowSenderAddress}&followerAddress=${followerAddress}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  }
+
+  async function postFollower(followerAddress, flowSenderAddress) {
+    try {
+      await fetch(
+        "https://qfgg4yahcg.execute-api.eu-north-1.amazonaws.com/fluidSense/followers",
+        {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+          },
+          body: JSON.stringify({
+            followerAddress: followerAddress,
+            flowSenderAddress: flowSenderAddress,
+          }),
+          mode: "no-cors",
+        }
+      );
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
   const contractLens = new ethers.Contract(
     contractLensAddress,
@@ -46,12 +90,12 @@ async function main() {
     providerLens
   );
 
-  async function createFlow(newFollower, clientFromApi, txHash) {
-    contractCampaign = new ethers.Contract(
-      clientFromApi.flowSenderAddress,
-      campaingAbi,
-      signer
-    );
+  async function createFlow(
+    newFollower,
+    clientFromApi,
+    txHash,
+    followersFromApi
+  ) {
     let followerForSteam = newFollower;
     if (followerForSteam === "0x5a84eC20F88e94dC3EB96cE77695997f8446a22D") {
       const tx = await providerLens.getTransaction(txHash);
@@ -61,64 +105,67 @@ async function main() {
       const result = iface.decodeFunctionData("followFor", tx.data);
       followerForSteam = result.mintFor[0];
     }
-    console.log("Creating steam to ", followerForSteam);
-    const alreadyWithFlow = await clientFromApi.followers.filter(
+    const alreadyWithFlow = await followersFromApi.filter(
       (follower) => follower.followerAddress === followerForSteam
     );
-    if (alreadyWithFlow) {
+
+    if (alreadyWithFlow.length !== 0) {
       console.log("Already with flow");
       return;
     }
+    console.log("Creating steam to ", followerForSteam);
+
+    const monthlyAmount = ethers.utils.parseEther(
+      clientFromApi.amountFlowRate.toString()
+    );
+    const calculatedFlowRate = Math.round(monthlyAmount / 2592000);
+
     const createFlowOperation = fUSDCx.createFlowByOperator({
       sender: clientFromApi.flowSenderAddress,
       receiver: followerForSteam,
       flowRate: calculatedFlowRate,
     });
     await createFlowOperation.exec(signer);
-    clientFromApi.followers.push({
-      followerAddress: followerForSteam,
-      flowSenderAddress: clientFromApi.flowSenderAddress,
-    });
-    console.log(
-      "Create flow done!, adding",
-      followerForSteam,
-      "to followersArray"
-    );
+    await postFollower(followerForSteam, clientFromApi.flowSenderAddress);
+    console.log("Create flow done!, adding", followerForSteam, "to followers");
   }
 
-  async function cleanSteams(newFollower, clientFromApi, txHash) {
-    console.log("Cleaning...");
+  async function cleanSteams(
+    newFollower,
+    clientFromApi,
+    txHash,
+    followersFromApi
+  ) {
     try {
       const contractLensNFT = new ethers.Contract(
         clientFromApi.followNftAddress,
         ERC721,
         providerLens
       );
-      clientFromApi.followers.map(async (follower) => {
+      followersFromApi.map(async (follower) => {
         const nftInBalance = await contractLensNFT.balanceOf(
           follower.followerAddress
         );
-        if (nftInBalance === 0) {
-          console.log("Cleaning ", follower.followerAddress);
-          contractCampaign = new ethers.Contract(
-            client.flowSenderAddress,
-            campaingAbi,
-            signer
-          );
+        if (Number(nftInBalance.toString()) === 0) {
+          console.log("Cleaning...", follower.followerAddress);
           const deleteFlowOperation = sf.cfaV1.deleteFlowByOperator({
-            sender: client.flowSenderAddress,
+            sender: clientFromApi.flowSenderAddress,
             receiver: follower.followerAddress,
-            superToken: fUSDCx,
+            superToken: fUSDCx.address,
           });
-          await deleteFlowOperation
-            .exec(signer)
-            .then(followersArray.splice(index, 1));
+          await deleteFlowOperation.exec(signer);
+          console.log("Cleaned", follower.followerAddress);
+          await deleteFollower(
+            clientFromApi.flowSenderAddress,
+            follower.followerAddress
+          );
+          console.log(
+            "Delete flow done!, deleting",
+            follower.followerAddress,
+            "from followers"
+          );
         }
-        await createFlow(
-          newFollower,
-          clientFromApi.contractFlowAddress,
-          txHash
-        );
+        await createFlow(newFollower, clientFromApi, txHash, followersFromApi);
       });
     } catch (err) {
       console.log(err);
@@ -126,26 +173,28 @@ async function main() {
   }
 
   async function steam(profileIds, newFollower, tx) {
+    await getClients();
     const client = clientsArray.filter((_client) => {
-      return _client.clientProfileId.toString() === profileIds;
+      return _client.clientProfile === profileIds;
     });
-    if (client[0].followers.length > 0) {
+    const followers = await getFollowers(client[0].flowSenderAddress);
+    if (followers.length > 0) {
       console.log("Cleaning steams...");
-      await cleanSteams(newFollower, client[0], tx.transactionHash);
+      await cleanSteams(newFollower, client[0], tx.transactionHash, followers);
     } else {
-      await createFlow(newFollower, client[0], tx.transactionHash);
+      await createFlow(newFollower, client[0], tx.transactionHash, followers);
     }
   }
+
+  await getClients();
 
   contractLens.on(
     "Followed",
     async (newFollower, profileIds, followModuleDatas, timestamp, tx) => {
       if (
-        clientsArray.some(
-          (cli) => cli.clientProfileId.toString() === profileIds.toString()
-        )
+        clientsArray.some((cli) => cli.clientProfile === profileIds[0]._hex)
       ) {
-        await steam(profileIds.toString(), newFollower, tx);
+        await steam(profileIds[0]._hex, newFollower, tx);
       }
     }
   );

@@ -8,6 +8,7 @@ async function main() {
   );
   const _tokenX = "0x42bb40bF79730451B11f6De1CbA222F17b87Afd7"
   const _owner = "0xa8EC796eE75B04af1223445c587588181CEb56CD"
+  
   const campaignsFactory = await CampaignsFactory.deploy(_tokenX, _owner);
 
   await campaignsFactory.deployed();

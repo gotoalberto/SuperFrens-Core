@@ -10,6 +10,7 @@ const { Framework } = require("@superfluid-finance/sdk-core");
 require("dotenv").config();
 
 async function main() {
+  console.log("a");
   const providerLens = new ethers.providers.WebSocketProvider(
     `wss://polygon-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_KEY_POLYGON}`
   );
